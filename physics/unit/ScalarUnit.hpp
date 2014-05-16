@@ -116,7 +116,7 @@ template<
     int N,  //  amount of Substance
     unsigned char i=0u // Free counter to resolve unit ambiguities
 >
-class ScalarUnit
+cFlass ScalarUnit
 {
   private:
 
@@ -138,8 +138,9 @@ class ScalarUnit
 
     // constructor
     constexpr explicit ScalarUnit(long double value = 0.0L) : value(value) {}
-
-
+    
+    
+    
     // TODO: (Rody Oldenhuis) need to optimize; implementations are not NVRO friendly
 
     // Same-unit operator overloading
@@ -262,14 +263,14 @@ typedef ScalarUnit <+0, +0, +0, +0, +0, +0, +1, +0u>  AmountOfSubstance;
 
 // Derived units     L   M   t   C   T   I   N   i
 typedef ScalarUnit <+0, +0, -1, +0, +0, +0, +0, +0u>  AngularSpeed;
-typedef ScalarUnit <+0, +0, -2, +0, +0, +0, +0, +0u>  AngularAcceleration;
-typedef ScalarUnit <+2, +1, -1, +0, +0, +0, +0, +0u>  AngularMomentum;
-typedef ScalarUnit <+2, +0, -1, +0, +0, +0, +0, +0u>  SpecificAngularMomentum;
+typedef ScalarUnit <+0, +0, -2, +0, +0, +0, +0, +0u>  AngularAccelerationComponent;
+typedef ScalarUnit <+2, +1, -1, +0, +0, +0, +0, +0u>  AngularMomentumComponent;
+typedef ScalarUnit <+2, +0, -1, +0, +0, +0, +0, +0u>  SpecificAngularMomentumComponent;
 
 //                   L   M   t   C   T   I   N   i
 typedef ScalarUnit <+1, +0, -1, +0, +0, +0, +0, +0u>  Speed;
-typedef ScalarUnit <+1, +0, -2, +0, +0, +0, +0, +0u>  Acceleration;
-typedef ScalarUnit <+1, +0, -3, +0, +0, +0, +0, +0u>  Jerk;
+typedef ScalarUnit <+1, +0, -2, +0, +0, +0, +0, +0u>  AccelerationComponent;
+typedef ScalarUnit <+1, +0, -3, +0, +0, +0, +0, +0u>  JerkComponent;
 
 //                   L   M   t   C   T   I   N   i
 typedef ScalarUnit <+2, +0, +0, +0, +0, +0, +0, +0u>  Area;
@@ -277,15 +278,15 @@ typedef ScalarUnit <+3, +0, +0, +0, +0, +0, +0, +0u>  Volume;
 typedef ScalarUnit <-3, +1, +0, +0, +0, +0, +0, +0u>  Density;
 
 //                   L   M   t   C   T   I   N   i
-typedef ScalarUnit <+1, +1, -2, +0, +0, +0, +0, +0u>  Force;
-typedef ScalarUnit <+2, +1, -2, +0, +0, +0, +0, +0u>  Torque;
-typedef ScalarUnit <+1, +1, -1, +0, +0, +0, +0, +0u>  Momentum;
-typedef ScalarUnit <+1, +0, -1, +0, +0, +0, +0, +0u>  SpecificMomentum;
+typedef ScalarUnit <+1, +1, -2, +0, +0, +0, +0, +0u>  ForceComponent;
+typedef ScalarUnit <+2, +1, -2, +0, +0, +0, +0, +0u>  TorqueComponent;
+typedef ScalarUnit <+1, +1, -1, +0, +0, +0, +0, +0u>  MomentumComponent;
+typedef ScalarUnit <+1, +0, -1, +0, +0, +0, +0, +0u>  SpecificMomentumComponent;
 typedef ScalarUnit <+2, +1, -2, +0, +0, +0, +0, +1u>  Energy;    // NOTE: conflicts with Torque
 typedef ScalarUnit <+2, +0, -2, +0, +0, +0, +0, +0u>  SpecificEnergy;
 typedef ScalarUnit <+0, +0, -1, +0, +0, +0, +0, +1u>  Frequency; // NOTE: conflicts with AngularSpeed
 typedef ScalarUnit <-1, +1, -2, +0, +0, +0, +0, +0u>  Pressure;
-typedef ScalarUnit <+2, +1, +0, +0, +0, +0, +0, +0u>  MomentOfInertia;
+typedef ScalarUnit <+2, +1, +0, +0, +0, +0, +0, +0u>  MomentOfInertiaComponent;
 
 //                   L   M   t   C   T   I   N   i
 typedef ScalarUnit <+0, +0, +1, +1, +0, +0, +0, +0u>  Charge;
@@ -302,23 +303,23 @@ typedef ScalarUnit <+0, +1, -2, -1, +0, +0, +0, +0u>  MagneticFluxDensity;
 
 
 // aliases
-typedef Angle         DimensionLess;
+typedef Angle               DimensionLess;
+                            
+typedef Length              Displacement;
+typedef Length              Distance;
+typedef Length              ArcLength;
+typedef Length              Radius;
+                            
+typedef AngularSpeed        AngularRate;
+                            
+typedef Duration            Time;
 
-typedef Length        Displacement;
-typedef Length        Distance;
-typedef Length        ArcLength;
-typedef Length        Radius;
+typedef Energy              Work;
+typedef Energy              KineticEnergy;
+typedef Energy              PotentialEnergy;
+typedef Energy              BindingEnergy;
 
-typedef AngularSpeed  AngularRate;
-
-typedef Duration      Time;
-
-typedef Energy        Work;
-typedef Energy        KineticEnergy;
-typedef Energy        PotentialEnergy;
-typedef Energy        BindingEnergy;
-
-typedef Torque        Moment;
+typedef TorqueComponent     MomentComponent;
 
 
 
@@ -341,7 +342,6 @@ DECLARE_UNIT_TRAITS(Angle)
 DEFINE_UNIT_SHORT(Angle, rad, 1,1)
 
 DEFINE_LITERALS(Angle, deg, ::math::pi/180.0)
-
 
 
 // free literals for Angles that are multiples of pi radians
@@ -447,16 +447,16 @@ DEFINE_UNIT_LONG(Speed, meters_per_second, 1,1)
 
 // Acceleration
 // ------------------------------------
-DECLARE_UNIT_TRAITS(Acceleration)
+DECLARE_UNIT_TRAITS(AccelerationComponent)
 
-DEFINE_UNIT_SHORT(Acceleration, mps2, 1,1)
+DEFINE_UNIT_SHORT(AccelerationComponent, mps2, 1,1)
 
 
 // Jerk
 // ------------------------------------
-DECLARE_UNIT_TRAITS(Jerk)
+DECLARE_UNIT_TRAITS(JerkComponent)
 
-DEFINE_UNIT_SHORT(Jerk, mps3, 1,1)
+DEFINE_UNIT_SHORT(JerkComponent, mps3, 1,1)
 
 
 
@@ -535,26 +535,26 @@ DEFINE_UNIT_LONG(Frequency, Hertz, 1,1)
 
 // Force
 // ------------------------------------
-DECLARE_UNIT_TRAITS(Force)
+DECLARE_UNIT_TRAITS(ForceComponent)
 
-DEFINE_UNIT_SHORT(Force, N, 1,1)
+DEFINE_UNIT_SHORT(ForceComponent, N, 1,1)
 
-DEFINE_UNIT_LONG(Force,  newton, 1,1)
-DEFINE_UNIT_LONG(Force, newtons, 1,1)
-DEFINE_UNIT_LONG(Force,  Newton, 1,1)
-DEFINE_UNIT_LONG(Force, Newtons, 1,1)
+DEFINE_UNIT_LONG(ForceComponent,  newton, 1,1)
+DEFINE_UNIT_LONG(ForceComponent, newtons, 1,1)
+DEFINE_UNIT_LONG(ForceComponent,  Newton, 1,1)
+DEFINE_UNIT_LONG(ForceComponent, Newtons, 1,1)
 
 
 // Momentum
 // ------------------------------------
-DECLARE_UNIT_TRAITS(Momentum)
+DECLARE_UNIT_TRAITS(MomentumComponent)
 
-DEFINE_UNIT_SHORT(Momentum, Ns, 1,1)
+DEFINE_UNIT_SHORT(MomentumComponent, Ns, 1,1)
 
-DEFINE_UNIT_LONG(Momentum, newton_seconds, 1,1)
-DEFINE_UNIT_LONG(Momentum,  newton_second, 1,1)
-DEFINE_UNIT_LONG(Momentum, Newton_seconds, 1,1)
-DEFINE_UNIT_LONG(Momentum,  Newton_second, 1,1)
+DEFINE_UNIT_LONG(MomentumComponent, newton_seconds, 1,1)
+DEFINE_UNIT_LONG(MomentumComponent,  newton_second, 1,1)
+DEFINE_UNIT_LONG(MomentumComponent, Newton_seconds, 1,1)
+DEFINE_UNIT_LONG(MomentumComponent,  Newton_second, 1,1)
 
 
 
@@ -753,6 +753,8 @@ DEFINE_LONG_SI_MULTIPLIERS(MagneticFluxDensity, Tesla, 1)
 #undef DEFINE_LONG_SI_MULTIPLIERS
 #undef DEFINE_UNIT_SHORT
 #undef DEFINE_UNIT_LONG
+
+
 
 #endif // include guard
 
