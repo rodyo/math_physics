@@ -6,7 +6,7 @@
 namespace math {
 	
 	
-template<class T, size_t rows=3, size_t cols=3>
+template<class T = double, size_t rows=3, size_t cols=3>
 class Matrix 
 	:: public Tensor<T>
 { 
