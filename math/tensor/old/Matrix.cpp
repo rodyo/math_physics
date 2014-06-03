@@ -1,192 +1,35 @@
 #include "Matrix.hpp"
 
 
-/*****************************************************************************
- Slice class (for array slicing into the Matrix)
-*****************************************************************************/
-#if 1
-
-#define SLICE_INIT \
-    , start  (_start) \
-    , end    (_end)   \
-    , all    (_all)   \
-    , step   (_step)
-
-// empty constructor: slice over all rows/columns
-template <typename T>
-Matrix<T>::Slice::Slice()
-    : _start (0)
-    , _step  (1)
-    , _end   (0)
-    , _all   (true)
-    SLICE_INIT
-{}
-
-// use only start, end (step = 1)
-template <typename T>
-Matrix<T>::Slice::Slice(unsigned int start, unsigned int end)
-    : _start (start)
-    , _step  (1)
-    , _end   (end)
-    , _all   (false)
-    SLICE_INIT
-{}
-
-// full call: start,step,end
-template <typename T>
-Matrix<T>::Slice::Slice(unsigned int start, int step, unsigned int end)
-    : _start (start)
-    , _step  (step)
-    , _end   (end)
-    , _all   (false)
-    SLICE_INIT
-{ }
-
-// return number of elements inferred by the slice
-template <typename T>
-unsigned int
-Matrix<T>::Slice::length() {
-    return ( end==INT_MAX ? INT_MAX : (int)floor((end-start)/step)+1 );
-}
-
-
-/*****************************************************************************
- Cref class
- * for assignmetns done with slices or int/boolmatrices
-*****************************************************************************/
-
-union Matrix<T>::Cref::rowind_t
-{
-    const Slice R;
-    const unsigned int r;
-    const Matrix<unsigned int> iR;
-    const Matrix<bool> I;
-};
-
-union Matrix<T>::Cref::colind_t
-{
-    const Slice C;
-    const unsigned int c;
-    const Matrix<unsigned int> iC;
-};
-
-const Matrix<T> &
-Matrix<T>::Cref::operator=(const Matrix<T> &M2)
-{
-    if ( (M2.numel != M.numel) || (M2.rows != M.rows) )
-        throw std::runtime_error("Subscripted assignment dimension mismatch.");
-
-// TODO
-
-    switch (mode)
-    {
-        // Mode 0: sliced row, constant column
-        case 0:
-            break;
-
-        // Mode 1: constant row, sliced column
-        case 1:
-            break;
-
-        // Mode 2: both indices sliced
-        case 2:
-            break;
-
-        // Mode 3: linear slice
-        case 3:
-            break;
-
-        // Mode 4: boolmatrix
-        case 4:
-            break;
-
-        // Mode 5: row with int matrix, constant col
-        case 5:
-            break;
-
-        // Mode 6: constant row, col with int matrix
-        case 6:
-            break;
-
-        // Mode 7: linear intmatrix
-        case 7:
-            break;
-    }
-
-    return M;
-}
 
 
 
-// Mode 0: sliced row, constant column
-Matrix<T>::Cref::Cref(Matrix<T> &M, const Slice &R, unsigned int c)
-    : M   (M)
-    , mode(0) {
-    rowind.R = R;
-    colind.c = c;
-}
-
-// Mode 1: constant row, sliced column
-Matrix<T>::Cref::Cref(Matrix<T> &M, unsigned int r, const Slice &C)
-    : M   (M)
-    , mode(1) {
-    rowind.r = r;
-    colind.C = C;
-}
-
-// Mode 2: both indices sliced
-Matrix<T>::Cref::Cref(Matrix<T> &M, const Slice &R, const Slice &C)
-    : M   (M)
-    , mode(2) {
-    rowind.R = R;
-    colind.C = C;
-}
-
-// Mode 3: linear slice
-Matrix<T>::Cref::Cref(Matrix<T> &M, const Slice &I)
-    : M   (M)
-    , mode(3) {
-    rowind.R = I;
-}
-
-// Mode 4: boolmatrix
-Matrix<T>::Cref::Cref(Matrix<T> &M, const Matrix<bool> &I)
-    : M   (M)
-    , mode(3) {
-    rowind.I = I;
-}
 
 
-#endif
-
-
-
-/*****************************************************************************
- Matrix, class getters
-*****************************************************************************/
-#if 1
-
-template<> void Matrix<double>::_get_class(double&) { _class = "double";}
-template<> void Matrix<float>::_get_class (float&)  { _class = "float"; }
-template<> void Matrix<int>::_get_class   (int&)    { _class = "int";   }
-template<> void Matrix<char>::_get_class  (char&)   { _class = "char";  }
-           void Matrix<bool>::_get_class  (bool&)   { _class = "bool";  }
-
-#endif // class getters
+//
+///*****************************************************************************
+// Matrix, class getters
+//*****************************************************************************/
+//
+//
+//template<> void Matrix<double>::_get_class(double&) { _class = "double";}
+//template<> void Matrix<float>::_get_class (float&)  { _class = "float"; }
+//template<> void Matrix<int>::_get_class   (int&)    { _class = "int";   }
+//template<> void Matrix<char>::_get_class  (char&)   { _class = "char";  }
+//           void Matrix<bool>::_get_class  (bool&)   { _class = "bool";  }
+//
 
 
 
 /*****************************************************************************
  Matrix bool specialization:
 *****************************************************************************/
-#if 1
 
-#endif
 
 /*****************************************************************************
  Matrix<bool> specialization: constructors
 *****************************************************************************/
-#if 1
+
 
 // empty bool matrix
 Matrix<bool>::Matrix() :
@@ -234,14 +77,14 @@ Matrix<bool>::Matrix(const Matrix<bool> &M2) :
 Matrix<bool>::~Matrix()
     {delete[] M;}
 
-#endif
+
 
 
 
 /*****************************************************************************
  Matrix<bool> specialization: operator overloads
 *****************************************************************************/
-#if 1
+
 
 // assignment
 Matrix<bool>& Matrix<bool>::operator=(const Matrix<bool> &M2)
@@ -290,25 +133,24 @@ Matrix<bool> Matrix<bool>::operator()(const Matrix<bool> &M2) const
     }
 }
 
-#endif
+
 
 
 
 /*****************************************************************************
 Matrix bool specialization: Basic ops
 *****************************************************************************/
-#if 1
 
-// print matrix
-void Matrix<bool>::show()
-{
-    for (unsigned int i=0; i<rows; i++){
-        printf("\n");
-        for (unsigned int j=0; j<cols; j++)
-            printf("%d ", (int)this->operator()(i,j));
-    }
-    printf("\n\n");
-}
+//// print matrix
+//void Matrix<bool>::show()
+//{
+//    for (unsigned int i=0; i<rows; i++){
+//        printf("\n");
+//        for (unsigned int j=0; j<cols; j++)
+//            printf("%d ", (int)this->operator()(i,j));
+//    }
+//    printf("\n\n");
+//}
 
 
 //bool all(const Matrix<bool> &M1)
@@ -319,7 +161,7 @@ void Matrix<bool>::show()
     //return true;
 //}
 
-#endif
+
 
 
 
