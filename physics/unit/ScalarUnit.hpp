@@ -20,8 +20,8 @@
  */
 
 
-#ifndef __SCALARUNIT_HPP
-#define __SCALARUNIT_HPP
+#ifndef SCALARUNIT_HPP
+#define SCALARUNIT_HPP
 
 
 #include <iostream>
@@ -116,7 +116,7 @@ template<
     int N,  //  amount of Substance
     unsigned char i=0u // Free counter to resolve unit ambiguities
 >
-cFlass ScalarUnit
+class ScalarUnit
 {
   private:
 
@@ -133,14 +133,20 @@ cFlass ScalarUnit
 
   public:
 
-    // some boilerplate
-    constexpr ScalarUnit(const ScalarUnit &x) : value(x.value) {}
+    // constructors
+    template <int L2, int M2, int t2, int C2, int T2, int I2, int N2, unsigned char i2>
+    constexpr ScalarUnit(const ScalarUnit<L2,M2,t2,C2,T2,I2,N2,i2> &x)
+        : value(x.getValue())
+    {
+        static_assert(L==L2 && M==M2 && t==t2 && C==C2 && T==T2 && I==I2 && N==N2 && i==i2,
+                      "Cannot convert \""  "\" to \"" "\".");
 
-    // constructor
+    }
+
     constexpr explicit ScalarUnit(long double value = 0.0L) : value(value) {}
-    
-    
-    
+
+
+
     // TODO: (Rody Oldenhuis) need to optimize; implementations are not NVRO friendly
 
     // Same-unit operator overloading
@@ -202,15 +208,22 @@ cFlass ScalarUnit
     constexpr long double getValue() const noexcept { return value; }
 
     // DISALLOW implicit conversions; leave unimplemented
-    //operator double() const;
-   // operator long double() const;
+    operator double() const;
+    operator long double() const;
 
     // toString (for lexical casts)
     constexpr std::string toString() const {
         return toString(ScalarUnitTraits<ScalarUnit<L,M,t,C,T,I,N,i>>::SI_unit);
     }
 
-    //
+    // assignment
+    template <int L2, int M2, int t2, int C2, int T2, int I2, int N2, unsigned char i2>
+    constexpr ScalarUnit
+    operator= (const ScalarUnit<L2,M2,t2,C2,T2,I2,N2,i2> &rhs) const {
+        static_assert(L==L2 && M==M2 && t==t2 && C==C2 && T==T2 && I==I2 && N==N2 && i==i2,
+                      "Cannot assign \"" "\" to \"" "\".");
+        value = rhs.value;
+    }
 
 };
 
@@ -218,18 +231,21 @@ cFlass ScalarUnit
 // need opererators "outside" of class to allow these:
 
 template <int L, int M, int t, int C, int T, int I, int N, unsigned char i>
-constexpr ScalarUnit<-L,-M,-t,-C,-T,-I,-N,i> operator/ (const long double &lhs, const ScalarUnit<L,M,t,C,T,I,N,i> &rhs) {
+constexpr ScalarUnit<-L,-M,-t,-C,-T,-I,-N,i>
+operator/ (const long double &lhs, const ScalarUnit<L,M,t,C,T,I,N,i> &rhs) {
     return ScalarUnit<-L,-M,-t,-C,-T,-I,-N,i>( lhs/rhs.getValue() );
 }
 
 
 template <int L, int M, int t, int C, int T, int I, int N, unsigned char i>
-constexpr ScalarUnit<L,M,t,C,T,I,N,i> operator*(const long double &lhs, const ScalarUnit<L,M,t,C,T,I,N,i> &rhs) {
+constexpr ScalarUnit<L,M,t,C,T,I,N,i>
+operator* (const long double &lhs, const ScalarUnit<L,M,t,C,T,I,N,i> &rhs) {
     return rhs*lhs;
 }
 
 template <int L, int M, int t, int C, int T, int I, int N, unsigned char i>
-std::ostream& operator<<(std::ostream &target, const ScalarUnit<L,M,t,C,T,I,N,i> &rhs) {
+std::ostream&
+operator<<(std::ostream &target, const ScalarUnit<L,M,t,C,T,I,N,i> &rhs) {
     target << rhs.toString();
     return target;
 }
@@ -304,14 +320,14 @@ typedef ScalarUnit <+0, +1, -2, -1, +0, +0, +0, +0u>  MagneticFluxDensity;
 
 // aliases
 typedef Angle               DimensionLess;
-                            
+
 typedef Length              Displacement;
 typedef Length              Distance;
 typedef Length              ArcLength;
 typedef Length              Radius;
-                            
+
 typedef AngularSpeed        AngularRate;
-                            
+
 typedef Duration            Time;
 
 typedef Energy              Work;
@@ -451,6 +467,9 @@ DECLARE_UNIT_TRAITS(AccelerationComponent)
 
 DEFINE_UNIT_SHORT(AccelerationComponent, mps2, 1,1)
 
+DEFINE_UNIT_LONG(AccelerationComponent,  meter_per_second_squared, 1,1)
+DEFINE_UNIT_LONG(AccelerationComponent, meters_per_second_squared, 1,1)
+
 
 // Jerk
 // ------------------------------------
@@ -458,7 +477,8 @@ DECLARE_UNIT_TRAITS(JerkComponent)
 
 DEFINE_UNIT_SHORT(JerkComponent, mps3, 1,1)
 
-
+DEFINE_UNIT_LONG(JerkComponent,  meter_per_second_cubed, 1,1)
+DEFINE_UNIT_LONG(JerkComponent, meters_per_second_cubed, 1,1)
 
 
 // Area
@@ -578,14 +598,14 @@ DEFINE_UNIT_LONG(Pressure,  Pascal, 1,1)
 // Torque
 // ------------------------------------
 // NOTE: == energy
-DECLARE_UNIT_TRAITS(Torque)
+DECLARE_UNIT_TRAITS(TorqueComponent)
 
-DEFINE_UNIT_SHORT(Torque, Nm, 1,1)
+DEFINE_UNIT_SHORT(TorqueComponent, Nm, 1,1)
 
-DEFINE_UNIT_LONG(Torque,  newton_meter, 1,1)
-DEFINE_UNIT_LONG(Torque, newton_meters, 1,1)
-DEFINE_UNIT_LONG(Torque,  Newton_meter, 1,1)
-DEFINE_UNIT_LONG(Torque, Newton_meters, 1,1)
+DEFINE_UNIT_LONG(TorqueComponent,  newton_meter, 1,1)
+DEFINE_UNIT_LONG(TorqueComponent, newton_meters, 1,1)
+DEFINE_UNIT_LONG(TorqueComponent,  Newton_meter, 1,1)
+DEFINE_UNIT_LONG(TorqueComponent, Newton_meters, 1,1)
 
 
 
