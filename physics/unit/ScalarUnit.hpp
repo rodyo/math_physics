@@ -116,7 +116,7 @@ template<
     int N,  //  amount of Substance
     unsigned char i=0u // Free counter to resolve unit ambiguities
 >
-cFlass ScalarUnit
+class ScalarUnit
 {
   private:
 
@@ -138,9 +138,9 @@ cFlass ScalarUnit
 
     // constructor
     constexpr explicit ScalarUnit(long double value = 0.0L) : value(value) {}
-    
-    
-    
+
+
+
     // TODO: (Rody Oldenhuis) need to optimize; implementations are not NVRO friendly
 
     // Same-unit operator overloading
@@ -202,15 +202,13 @@ cFlass ScalarUnit
     constexpr long double getValue() const noexcept { return value; }
 
     // DISALLOW implicit conversions; leave unimplemented
-    //operator double() const;
-   // operator long double() const;
+    operator double() const;
+    operator long double() const;
 
     // toString (for lexical casts)
     constexpr std::string toString() const {
         return toString(ScalarUnitTraits<ScalarUnit<L,M,t,C,T,I,N,i>>::SI_unit);
     }
-
-    //
 
 };
 
@@ -251,8 +249,13 @@ std::ostream& operator<<(std::ostream &target, const ScalarUnit<L,M,t,C,T,I,N,i>
 // i: (free counter)
 
 
+// Dimensionless     L   M   t   C   T   I   N   i
+typedef ScalarUnit <+0, +0, +0, +0, +0, +0, +0, +0u>  Dimensionless;
+typedef ScalarUnit <+0, +0, +0, +0, +0, +0, +0, +1u>  Angle;
+typedef ScalarUnit <+0, +0, +0, +0, +0, +0, +0, +1u>  PlaneAngle;
+typedef ScalarUnit <+0, +0, +0, +0, +0, +0, +0, +2u>  SolidAngle;
+
 // Base units        L   M   t   C   T   I   N   i
-typedef ScalarUnit <+0, +0, +0, +0, +0, +0, +0, +0u>  Angle; // == dimensionless
 typedef ScalarUnit <+1, +0, +0, +0, +0, +0, +0, +0u>  Length;
 typedef ScalarUnit <+0, +1, +0, +0, +0, +0, +0, +0u>  Mass;
 typedef ScalarUnit <+0, +0, +1, +0, +0, +0, +0, +0u>  Duration;
@@ -271,6 +274,9 @@ typedef ScalarUnit <+2, +0, -1, +0, +0, +0, +0, +0u>  SpecificAngularMomentumCom
 typedef ScalarUnit <+1, +0, -1, +0, +0, +0, +0, +0u>  Speed;
 typedef ScalarUnit <+1, +0, -2, +0, +0, +0, +0, +0u>  AccelerationComponent;
 typedef ScalarUnit <+1, +0, -3, +0, +0, +0, +0, +0u>  JerkComponent;
+typedef ScalarUnit <+1, +0, -4, +0, +0, +0, +0, +0u>  SnapComponent;
+typedef ScalarUnit <+1, +0, -5, +0, +0, +0, +0, +0u>  CrackleComponent;
+typedef ScalarUnit <+1, +0, -6, +0, +0, +0, +0, +0u>  PopComponent;
 
 //                   L   M   t   C   T   I   N   i
 typedef ScalarUnit <+2, +0, +0, +0, +0, +0, +0, +0u>  Area;
@@ -284,9 +290,12 @@ typedef ScalarUnit <+1, +1, -1, +0, +0, +0, +0, +0u>  MomentumComponent;
 typedef ScalarUnit <+1, +0, -1, +0, +0, +0, +0, +0u>  SpecificMomentumComponent;
 typedef ScalarUnit <+2, +1, -2, +0, +0, +0, +0, +1u>  Energy;    // NOTE: conflicts with Torque
 typedef ScalarUnit <+2, +0, -2, +0, +0, +0, +0, +0u>  SpecificEnergy;
-typedef ScalarUnit <+0, +0, -1, +0, +0, +0, +0, +1u>  Frequency; // NOTE: conflicts with AngularSpeed
 typedef ScalarUnit <-1, +1, -2, +0, +0, +0, +0, +0u>  Pressure;
 typedef ScalarUnit <+2, +1, +0, +0, +0, +0, +0, +0u>  MomentOfInertiaComponent;
+
+//                   L   M   t   C   T   I   N   i
+typedef ScalarUnit <+0, -1, +0, +0, +0, +0, +0, +0u>  Wavenumber;
+typedef ScalarUnit <+0, +0, -1, +0, +0, +0, +0, +1u>  Frequency; // NOTE: conflicts with AngularSpeed
 
 //                   L   M   t   C   T   I   N   i
 typedef ScalarUnit <+0, +0, +1, +1, +0, +0, +0, +0u>  Charge;
@@ -299,19 +308,23 @@ typedef ScalarUnit <+2, +1, -2, -2, +0, +0, +0, +0u>  Inductance;
 typedef ScalarUnit <+2, +1, -2, -1, +0, +0, +0, +0u>  MagneticFlux;
 typedef ScalarUnit <+0, +1, -2, -1, +0, +0, +0, +0u>  MagneticFluxDensity;
 
+//                   L   M   t   C   T   I   N   i
+typedef ScalarUnit <-1, +1, -1, +0, +0, +0, +0, +0u>  Viscocity;
+
 
 
 
 // aliases
-typedef Angle               DimensionLess;
-                            
 typedef Length              Displacement;
 typedef Length              Distance;
 typedef Length              ArcLength;
 typedef Length              Radius;
-                            
+typedef Length              Wavelength;
+
+typedef SnapComponent      JounceComponent;
+
 typedef AngularSpeed        AngularRate;
-                            
+
 typedef Duration            Time;
 
 typedef Energy              Work;
