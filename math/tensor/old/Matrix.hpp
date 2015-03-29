@@ -2,23 +2,64 @@
 #define _MATRIX_HPP
 
 
+
+
+// TODO: apply consistent styling
+
+
+
+
 #include <stdexcept>
-#include <valarray>
+//#include <valarray>
 #include <cmath>
 #include <limits.h>
-#include <stdint.h>
+//#include <stdint.h>
+#include <stdio.h>
 #include <iostream>
-#include <string>
+//#include <string>
 #include <vector>
-#include <tuple>
-#include <utility>
+//#include <tuple>
+//#include <utility>
 
-#include "PhysUnits.hh"
+
+// Handy defines, typedefs
+// --------------------------------------------------------------------------
+#define   MATRIX_START     0
+#define   MATRIX_END       INT_MAX
+#define   MATRIX_ALL       Matrix<>::Slice()
+
+#define MATRIX_INIT(r,c) \
+    : _rows       (r)           \
+    , _cols       (c)           \
+    , _numel      (_rows*_cols) \
+    , _isempty    (_numel == 0) \
+    , _isvector   ((_rows==1)||(_cols==1))\
+    , _isscalar   (_numel == 1) \
+    , _issymmetric(false)       \
+                                \
+    , rows        (_rows)       \
+    , cols        (_cols)       \
+    , numel       (_numel)      \
+    , datatype    (_class)      \
+    , isempty     (_isempty)    \
+    , isvector    (_isvector)   \
+    , isscalar    (_isscalar)   \
+    , issymmetric (_issymmetric)\
+{                               \
+    T a; _get_class(a);         \
+    _initialize_data(rows,cols);
+
+
+#define SLICE_INIT \
+    , start  (_start) \
+    , end    (_end)   \
+    , all    (_all)   \
+    , step   (_step)
+
 
 
 // Forward declarations
 // --------------------------------------------------------------------------
-class Slice;
 
 template<typename T> class Vector;
 template<typename T> class Matrix;
@@ -27,20 +68,10 @@ template<> class Vector<bool>;
 template<> class Matrix<bool>;
 
 
-// Handy defines, typedefs
-// --------------------------------------------------------------------------
-#define   START     0
-#define   END       INT_MAX
-#define   ALL       Matrix<>::Slice()
-
-
-// class definitions
-#if 1
 
 
 // Matrix template class
 // --------------------------------------------------------------------------
-#if 1
 
 template<typename T = double>
 class Matrix
@@ -92,7 +123,7 @@ public:
     const unsigned int
         &rows, &cols, &numel;
     const bool
-        &isempty, &isvector, &isscalar;
+        &isempty, &isvector, &isscalar, &issymmetric;
     const char*
         &datatype;
 
@@ -122,15 +153,15 @@ public:
 
 
     // type casting
-    operator Matrix<float>    () { return Matrix<float>   (*this); }
-    operator Matrix<double>   () { return Matrix<double>  (*this); }
-    operator Matrix<char>     () { return Matrix<char>    (*this); }
-    operator Matrix<int>      () { return Matrix<int>     (*this); }
-    operator Matrix<uint8_t>  () { return Matrix<uint8_t> (*this); }
-    operator Matrix<uint16_t> () { return Matrix<uint16_t>(*this); }
-    operator Matrix<uint32_t> () { return Matrix<uint32_t>(*this); }
-    operator Matrix<uint64_t> () { return Matrix<uint64_t>(*this); }
-    operator Vector<T>        () { return Vector<T>(*this);        }
+    //operator Matrix<float>    () { return Matrix<float>   (*this); }
+    //operator Matrix<double>   () { return Matrix<double>  (*this); }
+    //operator Matrix<char>     () { return Matrix<char>    (*this); }
+    //operator Matrix<int>      () { return Matrix<int>     (*this); }
+    //operator Matrix<uint8_t>  () { return Matrix<uint8_t> (*this); }
+    //operator Matrix<uint16_t> () { return Matrix<uint16_t>(*this); }
+    //operator Matrix<uint32_t> () { return Matrix<uint32_t>(*this); }
+    //operator Matrix<uint64_t> () { return Matrix<uint64_t>(*this); }
+    //operator Vector<T>        () { return Vector<T>(*this);        }
 
     operator T () {
         if (_isscalar)
@@ -179,11 +210,12 @@ public:
         operator~();
 
     // indexing
-    const T
-        & operator()(unsigned int r, unsigned int c), // subscripts
-        & operator()(unsigned int ind),               // linear index
-        & operator[](unsigned int r, unsigned int c), // subscripts, NO bounds checks
-        & operator[](unsigned int ind);               // linear index, NO bounds checks
+    T
+        & operator()(unsigned int r, unsigned int c) const,   // subscripts
+        & operator()(unsigned int ind) const,                 // linear index
+        & operator()(unsigned int r, unsigned int c, bool dummy) const,   // subscripts, NO bounds checks
+        //& operator[](unsigned int r, unsigned int c) const, // subscripts, NO bounds checks
+        & operator[](unsigned int ind) const;                 // linear index, NO bounds checks
 
          Cref operator()(Slice i, unsigned int j);       // slicing rows, assign data
     Matrix<T> operator()(Slice i, unsigned int j) const; // slicing rows, extract data
@@ -246,8 +278,6 @@ protected:
 
     // the Matrix' data is itself just a C-array
     T *M;
-    // the Matrix' data is itself just a valarray
-    std::valarray<T> *M;
 
     // matrix' size
     unsigned int
@@ -259,7 +289,8 @@ protected:
     bool
         _isempty,
         _isvector,
-        _isscalar;
+        _isscalar,
+        _issymmetric;
 
     // class of Matrix
     const char*
@@ -315,15 +346,20 @@ protected:
 
     };
 
+
+    // Initialize matrix' data
+    void
+        _initialize_data(unsigned int r, unsigned int c);
+
 };
 
-#endif
+
 
 
 
 // Matrix class:: bool specialization
 // --------------------------------------------------------------------------
-#if 1
+
 
 template<>
 class Matrix<bool>
@@ -397,13 +433,13 @@ private:
     Matrix<bool>(const Vector<bool> &V2);
 };
 
-#endif
+
 
 
 
 // Vector template class
 // --------------------------------------------------------------------------
-#if 1
+
 
 template<typename T = double>
 class Vector
@@ -457,48 +493,175 @@ public:
 
 };
 
-#endif // vector class
-
-
-#endif // class definitions
 
 
 
 
 
-// Handy typedefs
-// --------------------------------------------------------------------------
-#if 1
+//*****************************************************************************
+// Slice class (for array slicing into the Matrix)
+//*****************************************************************************/
 
-typedef Matrix<double>    dMatrix;
-typedef Matrix<float>     fMatrix;
-typedef Matrix<int>       iMatrix;
-typedef Matrix<uint8_t>   uiMatrix;
-typedef Matrix<uint8_t>   ui8Matrix;
-typedef Matrix<uint16_t>  ui16Matrix;
-typedef Matrix<uint32_t>  ui32Matrix;
-typedef Matrix<uint32_t>  ui64Matrix;
-typedef Matrix<char>      cMatrix;
-typedef Matrix<bool>      bMatrix;
+// empty constructor: slice over all rows/columns
+template <typename T>
+Matrix<T>::Slice::Slice()
+    : _start (0)
+    , _step  (1)
+    , _end   (0)
+    , _all   (true)
+    SLICE_INIT
+{}
 
-typedef Vector<double>    dVector;
-typedef Vector<float>     fVector;
-typedef Vector<int>       iVector;
-typedef Vector<uint8_t>   uiVector;
-typedef Vector<uint8_t>   ui8Vector;
-typedef Vector<uint16_t>  ui16Vector;
-typedef Vector<uint32_t>  ui32Vector;
-typedef Vector<uint32_t>  ui64Vector;
-typedef Vector<char>      cVector;
-typedef Vector<bool>      bVector;
+// use only start, end (step = 1)
+template <typename T>
+Matrix<T>::Slice::Slice(unsigned int start, unsigned int end)
+    : _start (start)
+    , _step  (1)
+    , _end   (end)
+    , _all   (false)
+    SLICE_INIT
+{}
+
+// full call: start,step,end
+template <typename T>
+Matrix<T>::Slice::Slice(unsigned int start, int step, unsigned int end)
+    : _start (start)
+    , _step  (step)
+    , _end   (end)
+    , _all   (false)
+    SLICE_INIT
+{ }
+
+// return number of elements inferred by the slice
+template <typename T>
+unsigned int
+Matrix<T>::Slice::length() {
+    return ( end==INT_MAX ? INT_MAX : static_cast<unsigned int>( floor(((double)end-(double)start)/(double)step)+1 ) );
+}
 
 
-typedef std::vector<double>        Vec;
-typedef std::vector<int>           VecI;
-typedef std::vector<unsigned int>  VecUI;
 
 
-#endif // typedefs
+
+/*****************************************************************************
+ Cref class
+ * for assignmetns done with slices or int/boolmatrices
+*****************************************************************************/
+
+template <typename T>
+union Matrix<T>::Cref::rowind_t
+{
+    const Slice R;
+    const unsigned int r;
+    const Matrix<unsigned int> iR;
+    const Matrix<bool> I;
+};
+
+template <typename T>
+union Matrix<T>::Cref::colind_t
+{
+    const Slice C;
+    const unsigned int c;
+    const Matrix<unsigned int> iC;
+};
+
+template <typename T>
+const Matrix<T> &
+Matrix<T>::Cref::operator=(const Matrix<T> &M2)
+{
+    if ( (M2.numel != M.numel) || (M2.rows != M.rows) )
+        throw std::runtime_error("Subscripted assignment dimension mismatch.");
+
+// TODO
+
+    switch (mode)
+    {
+        // Mode 0: sliced row, constant column
+        case 0:
+            break;
+
+        // Mode 1: constant row, sliced column
+        case 1:
+            break;
+
+        // Mode 2: both indices sliced
+        case 2:
+            break;
+
+        // Mode 3: linear slice
+        case 3:
+            break;
+
+        // Mode 4: boolmatrix
+        case 4:
+            break;
+
+        // Mode 5: row with int matrix, constant col
+        case 5:
+            break;
+
+        // Mode 6: constant row, col with int matrix
+        case 6:
+            break;
+
+        // Mode 7: linear intmatrix
+        case 7:
+            break;
+    }
+
+    return M;
+}
+
+
+
+// Mode 0: sliced row, constant column
+template <typename T>
+Matrix<T>::Cref::Cref(Matrix<T> &M, const Slice &R, unsigned int c)
+    : M   (M)
+    , mode(0) {
+    rowind.R = R;
+    colind.c = c;
+}
+
+// Mode 1: constant row, sliced column
+template <typename T>
+Matrix<T>::Cref::Cref(Matrix<T> &M, unsigned int r, const Slice &C)
+    : M   (M)
+    , mode(1) {
+    rowind.r = r;
+    colind.C = C;
+}
+
+// Mode 2: both indices sliced
+template <typename T>
+Matrix<T>::Cref::Cref(Matrix<T> &M, const Slice &R, const Slice &C)
+    : M   (M)
+    , mode(2) {
+    rowind.R = R;
+    colind.C = C;
+}
+
+// Mode 3: linear slice
+template <typename T>
+Matrix<T>::Cref::Cref(Matrix<T> &M, const Slice &I)
+    : M   (M)
+    , mode(3)
+{
+    rowind.R = I;
+}
+
+// Mode 4: boolmatrix
+template <typename T>
+Matrix<T>::Cref::Cref(Matrix<T> &M, const Matrix<bool> &I)
+    : M   (M)
+    , mode(3)
+{
+    rowind.I = I;
+}
+
+
+
+
 
 
 
@@ -506,216 +669,148 @@ typedef std::vector<unsigned int>  VecUI;
 
 // Matrix base template: constructors
 // --------------------------------------------------------------------------
-#if 1
 
-// class getter
+// initialize data
+// (UNIT TESTED)
+template<typename T>
+void
+Matrix<T>::_initialize_data(unsigned int r, unsigned int c)
+{   // Allocate new M safely
+    M = new T[r*c];
+    if (!M)
+        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
+}
+
+// class getter (to be specialized)
 template<typename T>
 void Matrix<T>::_get_class(T&) {
     _class = "unknown";
 }
 
-// empty matrix
-// TODO: there must be a better way to do this...
-#define MATRIX_INIT \
-    , _numel     (_rows*_cols) \
-    , _isempty   (_numel == 0) \
-    , _isvector  ((_rows==1)||(_cols==1))\
-    , _isscalar  (_numel == 1) \
-                               \
-    , rows       (_rows)       \
-    , cols       (_cols)       \
-    , numel      (_numel)      \
-    , datatype   (_class)      \
-    , isempty    (_isempty)    \
-    , isvector   (_isvector)   \
-    , isscalar   (_isscalar)   \
-{                              \
-    T a; _get_class(a);
 
-template<typename T>
-Matrix<T>::Matrix()
-    : _rows   (0)
-    , _cols   (0)
-    MATRIX_INIT
-}
 
 // r-by-c matrix of zeros
+// (UNIT TESTED)
 template<typename T>
 Matrix<T>::Matrix(unsigned int r, unsigned int c)
-    : _rows      (r)
-    , _cols      (c)
-    MATRIX_INIT
+    MATRIX_INIT(r,c)
+    for (unsigned int m=0u; m<numel; ++m)
+        M[m] = static_cast<T>(0.0);
+}
 
-    // Allocate new M safely
-    M = new T[r*c];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    // initailize to zero
-    for (unsigned int m=0; m<numel; ++m)
-        M[m] = (T)0.0;
+// empty matrix
+// (UNIT TESTED)
+template<typename T>
+Matrix<T>::Matrix()
+    : Matrix(0u,0u)
+{
 }
 
 // r-by-c matrix, with data in contents[]
+// (TESTED)
 template<typename T>
 Matrix<T>::Matrix(unsigned int r, unsigned int c, T contents[])
-    : _rows      (r)
-    , _cols      (c)
-    MATRIX_INIT
-
-    M = new T[r*c];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    for (unsigned int i=0; i<numel; ++i)
+    MATRIX_INIT(r,c)
+    for (unsigned int i=0u; i<numel; ++i)
         M[i] = contents[i];
 }
 
 // r-by-c matrix, with data in std::vector<T> contents
+// (TESTED)
 template<typename T>
 Matrix<T>::Matrix(unsigned int r, unsigned int c, std::vector<T> contents)
-    : _rows      (r)
-    , _cols      (c)
-    MATRIX_INIT
-
-    M = new T[r*c];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    for(unsigned int i=0; i<numel; ++i)
+    MATRIX_INIT(r,c)
+    for(unsigned int i=0u; i<numel; ++i)
         M[i] = contents.at(i); // DO use bounds checking
 }
 
 // i-by-i square matrix of zeros
+// (TESTED)
 template<typename T>
 Matrix<T>::Matrix(unsigned int i)
-    : _rows      (i)
-    , _cols      (i)
-    MATRIX_INIT
-
-    M = new T[i*i];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    // initalize to zero
-    for (i=0; i<numel; ++i)
-        M[i] = (T)0.0;
+    : Matrix(i,i)
+{
 }
 
 // i-by-i square matrix, with data in contents[]
+// (TESTED)
 template<typename T>
 Matrix<T>::Matrix(unsigned int i, T contents[])
-    : _rows      (i)
-    , _cols      (i)
-    MATRIX_INIT
-
-    M = new T[i*i];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    for (i=0; i<numel; ++i)
-        M[i] = contents[i];
+    : Matrix(i,i, contents)
+{
 }
 
 // i-by-i square matrix, with data in std::vector<T> contents
+// (TESTED)
 template<typename T>
 Matrix<T>::Matrix(unsigned int i, std::vector<T> contents)
-    : _rows  (i)
-    , _cols  (i)
-    MATRIX_INIT
-
-    M = new T[i*i];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    for(i=0; i<numel; ++i)
-        M[i] = contents.at(i); // DO check bounds
+    : Matrix(i,i, contents)
+{
 }
 
 // N-by-1 matrix, from data in std::vector<T> contents
+// (TESTED)
 template<typename T>
 Matrix<T>::Matrix(std::vector<T> contents)
-    : _rows  (contents.size())
-    , _cols  (1)
-    MATRIX_INIT
-
-    M = new T[_rows];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    for (unsigned int i=0; i<numel; ++i)
-        M[i] = contents[i]; // do NOT check bounds
+    : Matrix(contents.size(),1u, contents)
+{
 }
-
-
 
 // copy matrix of other type
+// (TESTED)
 template<typename T> template<typename D>
 Matrix<T>::Matrix(const Matrix<D> &M2)
-    : _rows (M2.rows)
-    , _cols (M2.cols)
-    MATRIX_INIT
-
-    M = new T[numel];
-    if (!M)
-        throw std::runtime_error("Matrix<T>::Matrix() - Matrix could not be created.");
-
-    // Copy data unsafely
+    MATRIX_INIT(M2.rows, M2.cols)
     for (unsigned int m=0; m<numel; ++m)
-        M++ = (T)M2.M++;
+        M[m] = static_cast<T>(M2[m]);
 }
-
-
-#undef MATRIX_INIT
-
-#endif // Matrix constructors
-
 
 
 
 // Matrix base template: operator overloading
 // --------------------------------------------------------------------------
-#if 1
+
 
 // indexing
-#if 1
+
 
 // with subscripts
+// (TESTED)
 template<typename T>
 T&
-Matrix<T>::operator()(unsigned int r, unsigned int c) const
-{
+Matrix<T>::operator()(unsigned int r, unsigned int c) const {
     if (r>rows-1 || c>cols-1)
         throw std::runtime_error("Matrix<T>::operator()() - Index out of bounds.");
     return M[r+rows*c];
 }
 
 // with subscripts (no bounds check)
+// (TESTED)
 template<typename T>
 T&
-Matrix<T>::operator()(unsigned int r, unsigned int c, bool dummy) const
-{
+Matrix<T>::operator()(unsigned int r, unsigned int c, bool dummy) const {
     return M[r+rows*c];
 }
 
 // with linear index
+// (TESTED)
 template<typename T>
 T&
-Matrix<T>::operator()(unsigned int ind) const
-{
+Matrix<T>::operator()(unsigned int ind) const {
     if (ind>numel-1)
         throw std::runtime_error("Matrix<T>::operator()() - Index out of bounds.");
-
     return M[ind];
 }
 
 // with linear index (no bounds check)
+// (TESTED)
 template<typename T>
 T&
-Matrix<T>::operator()(unsigned int ind, bool dummy) const
+Matrix<T>::operator[](unsigned int ind) const
 {
     return M[ind];
 }
+
 
 // slicing rows, assignment
 template<typename T>
@@ -726,27 +821,31 @@ Matrix<T>::operator()(Slice r, unsigned int c) -> Cref
 }
 
 // slicing rows, data access
+// (TESTED)
 template<typename T>
 Matrix<T>
-Matrix<T>::operator()(Slice r, unsigned int c) const
+Matrix<T>::operator()(Matrix<T>::Slice r, unsigned int c) const
 {
     if (c > cols-1)
         throw std::runtime_error("Matrix<T>::operator()() - Index out of bounds.");
 
     unsigned int
-        i, k=0,
-        L = r.length();
-    if (L > rows-1){
-        L = 0; for (i=r.start; i<=rows; i+=r.step) ++L;}
+        i, k=0, L = r.length();
+    if (L > rows)
+        L = static_cast<unsigned int>(floor(((double)(r.end>rows-1u?rows-1u:r.end)-(double)r.start)/(double)r.step)) + 1u;
 
-    Matrix<T> A(L,1);
-    for (i=r.start; i<(r.end>rows?rows:r.end); i+=r.step)
+    Matrix<T> A(L,1u);
+    for (i=r.start; i<(r.end+1u>rows?rows:r.end+1u); i+=r.step)
         A.M[k++] = M[i+rows*c];
 
     return A;
 }
 
-// slicing cols
+// slicing cols, assignment
+// TODO
+
+// slicing cols, data access
+// (TESTED)
 template<typename T>
 Matrix<T>
 Matrix<T>::operator()(unsigned int r, Slice c) const
@@ -755,14 +854,13 @@ Matrix<T>::operator()(unsigned int r, Slice c) const
         throw std::runtime_error("Matrix<T>::operator()() - Index out of bounds.");
 
     unsigned int
-        j,k=0,
-        L = c.length();
-    if (L > cols){
-        L = 0; for (j=c.start; j<=cols; j+=c.step) ++L;}
+        i, k=0, L = c.length();
+    if (L > rows)
+        L = static_cast<unsigned int>(floor(((double)(c.end>rows-1u?rows-1u:c.end)-(double)c.start)/(double)c.step)) + 1u;
 
-    Matrix<T> A(1,L);
-    for (j=c.start; j<(c.end>cols?cols:c.end); j+=c.step)
-        A.M[k++] = M[r+rows*j];
+    Matrix<T> A(1u,L);
+    for (i=c.start; i<(c.end+1u>cols?cols:c.end+1u); i+=c.step)
+        A.M[k++] = M[r+rows*i];
 
     return A;
 }
@@ -833,10 +931,10 @@ Matrix<T>::operator()(const Matrix<bool> &M2) const
         return B;
     }
 }
-#endif
+
 
 // assignment
-#if 1
+
 
 template<typename T>
 Matrix<T>&
@@ -857,11 +955,11 @@ Matrix<T>::operator=(const Matrix<T> &M2)
     return *this;
 }
 
-#endif
+
 
 
 // compound assignments
-#if 1
+
 
 // prefix increment
 template<typename T>
@@ -998,11 +1096,11 @@ Matrix<T>::operator^=(const Matrix<T> &M2)
 
 
 
-#endif
+
 
 
 // Subtract, add, divide, multiply
-#if 1
+
 
 // subtract
 template<typename T>
@@ -1098,9 +1196,9 @@ Matrix<T>::operator*(const Matrix<T> &M2) const
 
     Matrix<T> M3(rows,M2.cols);
     unsigned int i,j,k;
-    for(i = 0; i < rows; ++i)
-        for(j = 0; j < M2.cols; ++j)
-            for(k = 0; k < cols; ++k)
+    for(i = 0u; i<rows; ++i)
+        for(j = 0u; j<M2.cols; ++j)
+            for(k = 0u; k<cols; ++k)
                 M3(i,j) += this->operator()(i,k,false) * M2(k,j);
     return M3;
 }
@@ -1127,10 +1225,10 @@ Matrix<T>::operator^(const Matrix<T> &M2) const {
 
 
 
-#endif
+
 
 // Comparisons
-#if 1
+
 
 template<typename T>
 Matrix<bool>
@@ -1245,10 +1343,10 @@ Matrix<T>::operator>=(T a) const
     return A;
 }
 
-#endif
+
 
 // casting
-#if 1
+
 
 // FIXME: DOES NOT WORK
 
@@ -1264,16 +1362,13 @@ Matrix<T>::operator>=(T a) const
 //}
 
 
-#endif // casting
-
-#endif // Matrix operator overloading
 
 
 
 
 // Matrix base template: basic ops
 // --------------------------------------------------------------------------
-#if 1
+
 
 // Transpose
 template<typename T>
@@ -1332,7 +1427,7 @@ Matrix<T>::size() const {
     return M;
 }
 
-#endif // Matrix basic ops
+
 
 
 
@@ -1340,7 +1435,7 @@ Matrix<T>::size() const {
 
 // Vector base template: vector-specific operations
 // --------------------------------------------------------------------------
-#if 1
+
 
 // cross product
 template<typename T>
@@ -1424,14 +1519,14 @@ normalize(const Vector<T> &V) {
 }
 
 
-#endif // Vector-specific operations
+
 
 
 
 
 // Matrix base template: Special ops
 // --------------------------------------------------------------------------
-#if 1
+
 
 // all
 template<typename T>
@@ -1486,50 +1581,49 @@ isinf(const Matrix<T> &M){
 
 
 // print matrix to stdout
+// (UNIT TESTED)
+// -- needs specialization per typename
+// -- for floats, beautify output
 template<typename T>
 void
 Matrix<T>::show()
 {
     if (isempty)
-        std::cout << "[]" << std::endl;
+        printf("[]\n");
 
     else {
         unsigned int i,j;
-        for (i=0; i<rows; ++i){
-            std::cout << std::endl;
-            for (j=0; j<cols; ++j)
-                std::cout << M[i+rows*j];
+        for (i=0u; i<rows; ++i){
+            printf("\n");
+            for (j=0u; j<cols; ++j)
+                printf("%+18.15e ", M[i+rows*j]);
         }
     }
-    std::cout << std::endl << std::endl;
+    printf("\n\n");
 }
 
-#endif // special ops
 
 
-
-
- Basic Matrix generators
+// Basic Matrix generators
 // --------------------------------------------------------------------------
-#if 1
+
 
 // zeros, ones
+// (UNIT TESTED)
 template<typename T = double>
 Matrix<T>
 ones(unsigned int r, unsigned int c) {
     Matrix<T> A(r,c);
-    for (unsigned int i=0; i<A.numel; ++i)
-        A(i,false) = (T)1.0;
+    for (unsigned int i=0u; i<A.numel; ++i)
+        A[i] = static_cast<T>(1.0);
     return A;
 }
 template<typename T = double>
 Matrix<T>
 ones(unsigned int i) {
-    Matrix<T> A(i,i);
-    for (i=0; i<A.numel; ++i)
-        A(i,false) = (T)1.0;
-    return A;
+    return ones(i,i);
 }
+
 
 template<typename T = double>
 Matrix<T>
@@ -1539,17 +1633,19 @@ zeros(unsigned int r, unsigned int c) {
 template<typename T = double>
 Matrix<T>
 zeros(unsigned int i) {
-    return Matrix<T>(i,i);
+    return Matrix<T>(i);
 }
 
 
+
 // identity matrix
+// (UNIT TESTED)
 template<typename T = double>
 Matrix<T>
 eye(unsigned int i) {
-    Matrix<T> A(i,i);
-    for (i=0; i<A.rows; ++i)
-        A(i,i,false) = (T)1.0;
+    Matrix<T> A(i);
+    for (i=0u; i<A.rows; ++i)
+        A(i,i,false) = static_cast<T>(1.0);
     return A;
 }
 
@@ -1806,10 +1902,9 @@ sqrt(const Matrix<T> &A) {
 }
 
 
-#endif // matrix generators
 
 
-
+#undef MATRIX_INIT
 #endif // _MATRIX_HPP
 
 

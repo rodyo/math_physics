@@ -27,7 +27,7 @@
  */
 
 #define DEFINE_SI_BASE_UNIT(unit, str) \
-    const std::string ScalarUnitTraits<unit>::SI_unit = static_cast<std::string>(str);
+    const std::string ScalarUnitTraits<unit>::SI_unit = str;
 
 
 // FIXME: (Rody Oldenhuis)
@@ -61,7 +61,7 @@ DEFINE_SI_BASE_UNIT(Conductance          , "S"    )
 DEFINE_SI_BASE_UNIT(Capacitance          , "F"    )
 DEFINE_SI_BASE_UNIT(Inductance           , "H"    )
 DEFINE_SI_BASE_UNIT(MagneticFluxDensity  , "T"    )
-DEFINE_SI_BASE_UNIT(Torque               , "N·m"  )
+DEFINE_SI_BASE_UNIT(TorqueComponent      , "N·m"  )
 
 
 #undef DEFINE_SI_BASE_UNIT
